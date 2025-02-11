@@ -1,28 +1,44 @@
-version: '3.8'
-
+version: '3'
 services:
-  web:
-    build: .
-    ports:
-      - "5000:5000"
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-    environment:
-      - DATABASE_HOST=db
-      - DATABASE_USER=root
-      - DATABASE_PASSWORD=sova
-      - DATABASE_NAME=first
-
-  db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: sova
-      MYSQL_DATABASE: first
-    volumes:
-      - mysql_data:/var/lib/mysql
+   web:
+      build:
+         context: ./html
+         dockerfile: Dockerfile
+      ports:
+          - "5000:5000"
+      environment:
+        - DATABASE_HOST=db
+        - DATABASE_PORT=3306
+        - DATABASE_NAME=first
+        - DATABASE_USER=root
+        - DATABASE_PASSWORD=sova
+      volumes:
+          - ./html:/var/www/html
+          - db_data:/var/lib/mysql
+      depends_on:
+        - db
+      networks:
+        custom_network:
+          ipv4_address:  172.20.0.22
+   db:
+      image: mysql:8.0
+      environment:
+        MYSQL_DATABASE: first
+        MYSQL_USER: kali
+        MYSQL_PASSWORD: kali
+        MYSQL_ROOT_PASSWORD: sova
+      volumes:
+        - db_data:/var/lib/mysql
+      networks:
+        custom_network:
+          ipv4_address:  172.20.0.23
 
 volumes:
-  mysql_data:
+  db_data: {}
+
+networks:
+  custom_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet:  172.20.0.0/16
