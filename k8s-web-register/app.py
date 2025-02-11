@@ -45,9 +45,6 @@ def initialize_database():
         print(f"Error initializing database: {e}")
         db.rollback()
 
-# Call the initialization function when the app starts
-initialize_database()
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.cookies.get('User'):
@@ -179,4 +176,5 @@ def registration():
 
 
 if __name__ == '__main__':
+    initialize_database()
     app.run(debug=True)
