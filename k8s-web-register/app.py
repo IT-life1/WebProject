@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, redirect, make_response
-import pymysql
+import mysql.connector
 import os
 
 app = Flask(__name__)
 
 # Database connection
-db = pymysql.connect(
+db = mysql.connector.connect(
     host="db",
     user="root",
     password="sova",
@@ -45,6 +45,7 @@ def initialize_database():
         print(f"Error initializing database: {e}")
         db.rollback()
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.cookies.get('User'):
@@ -58,7 +59,7 @@ def login():
             return "Пожалуйста введите все значения!"
 
         # Vulnerable to SQL Injection
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
         query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
         cursor.execute(query)
         result = cursor.fetchone()
@@ -71,6 +72,7 @@ def login():
             return "Не правильное имя или пароль"
 
     return render_template('login.html')
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -107,23 +109,24 @@ def profile():
 
     return render_template('profile.html', username=username)
 
+
 @app.route('/post/<int:id>')
 def show_post(id):
     # Create a cursor to execute SQL queries
-    cursor = db.cursor()
-
+    cursor = db.cursor(dictionary=True)
     # Vulnerable to SQL Injection
     query = f"SELECT * FROM posts WHERE id={id}"
     cursor.execute(query)
     row = cursor.fetchone()
 
     if row:
-        title = row[1]  # Assuming 'title' is the second column in the table
-        main_text = row[2]  # Assuming 'main_text' is the third column in the table
+        title = row['title']  # Using dictionary cursor
+        main_text = row['main_text']
         return render_template('post.html', title=title, main_text=main_text)
     else:
         return "Post not found!", 404
-    
+
+
 @app.route('/')
 def index():
     # Check if the 'User' cookie is set
@@ -132,7 +135,7 @@ def index():
         return render_template('index.html', posts=None, logged_in=False)
 
     # Fetch posts from the database
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     query = "SELECT * FROM posts"
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -140,7 +143,8 @@ def index():
     # Prepare posts data for rendering
     posts = []
     for row in rows:
-        post_id, title, main_text = row  # Assuming columns: id, title, main_text
+        post_id = row['id']
+        title = row['title']
         posts.append({'id': post_id, 'title': title})
 
     return render_template('index.html', posts=posts, logged_in=True)
@@ -174,7 +178,6 @@ def registration():
     return render_template('registration.html')
 
 
-
 if __name__ == '__main__':
     initialize_database()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

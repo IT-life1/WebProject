@@ -1,9 +1,7 @@
 version: '3'
 services:
    web:
-      build:
-         context: ./html
-         dockerfile: Dockerfile
+      image: amozgov/app
       ports:
           - "5000:5000"
       environment:
@@ -12,9 +10,6 @@ services:
         - DATABASE_NAME=first
         - DATABASE_USER=root
         - DATABASE_PASSWORD=sova
-      volumes:
-          - ./html:/var/www/html
-          - db_data:/var/lib/mysql
       depends_on:
         - db
       networks:
