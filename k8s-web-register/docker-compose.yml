@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=sova
+      - DATABASE_NAME=first
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: sova
+      MYSQL_DATABASE: first
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

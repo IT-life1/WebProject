@@ -10,16 +10,8 @@
 </head>
 <body>
     <div class="container">
-        <form method="POST" action="/login">
-            <div class="col-8">
-                <h1>Вход</h1>
-                <hr>
-            </div>
-            <input type="text" placeholder="Enter Login" name="login" id="login" required class="form-control">
-            <input type="password" placeholder="Enter Password" name="password" id="password" required class="form-control">
-            <hr>
-            <button type="submit" class="btn btn-primary" name="submit">Продолжить</button>
-        </form>
+        <h1>{{ title }}</h1>
+        <p>{{ main_text }}</p>
     </div>
 </body>
 </html>
