@@ -146,27 +146,58 @@ def index():
 def registration():
     username = request.cookies.get('User')
     if username:
-        return redirect('/login')
-    
+        return redirect('/login')  # Если пользователь уже авторизован, отправляем его на страницу логина
+
     if request.method == 'POST':
         email = request.form['email']
         username = request.form['login']
         password = request.form['password']
+
+        # Проверка, что все поля заполнены
         if not email or not username or not password:
-            return "Пожалуйста введите все значения!"
-        
+            return render_template(
+                'registration.html',
+                error="Пожалуйста, заполните все поля!",
+                email=email,
+                login=username
+            )
+
         try:
             cursor = db.cursor()
+            # Проверяем, существует ли пользователь с таким email или username
+            cursor.execute("SELECT * FROM users WHERE email=%s OR username=%s", (email, username))
+            existing_user = cursor.fetchone()
+
+            if existing_user:
+                # Отображаем общее сообщение об ошибке без уточнения причин
+                return render_template(
+                    'registration.html',
+                    error="Пользователь с такими данными уже зарегистрирован.",
+                    email=email,
+                    login=username
+                )
+
+            # Если пользователя нет, регистрируем нового
             query = "INSERT INTO users (email, username, password) VALUES (%s, %s, %s)"
             cursor.execute(query, (email, username, password))
             db.commit()
-            return "Пользователь успешно зарегистрирован!"
+
+            # После успешной регистрации перенаправляем на страницу логина
+            return redirect('/login')
+
         except Exception as e:
-            db.rollback()
+            # Логируем ошибку для отладки, но не показываем её пользователю
             print(f"Error during registration: {e}")
-            return "Ошибка при регистрации пользователя."
-    
-    return render_template('registration.html')
+            db.rollback()
+            return render_template(
+                'registration.html',
+                error="Произошла ошибка при регистрации. Попробуйте позже.",
+                email=email,
+                login=username
+            )
+
+    # При GET-запросе просто показываем форму регистрации
+    return render_template('registration.html', error=None)
 
 if __name__ == '__main__':
     initialize_database()
