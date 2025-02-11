@@ -4,15 +4,15 @@ import os
 
 app = Flask(__name__)
 
-# Database connection
-db = psycopg2.connect(
-    host="db",
-    user="postgres",
-    password="sova",
-    database="first"
-)
-
 def initialize_database():
+    # Database connection
+    db = psycopg2.connect(
+        host="db",
+        user="postgres",
+        password="sova",
+        database="first"
+    )
+    
     cursor = db.cursor()
     # SQL statements to create tables
     users_table = """
