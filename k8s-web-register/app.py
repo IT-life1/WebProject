@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, make_response
 import psycopg2
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
+app.config['APPLICATION_ROOT'] = '/k8s-web-register'
 
 # Database connection
 db = psycopg2.connect(
